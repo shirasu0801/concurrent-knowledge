@@ -1,0 +1,67 @@
+{{define "content"}}
+<div class="container">
+    <section class="review-container">
+        <h2 class="page-title">復習リスト</h2>
+        <p class="page-subtitle">間違えた問題を復習しましょう</p>
+
+        <div class="review-controls">
+            <button class="btn btn-danger" id="clearAllButton">全て削除</button>
+        </div>
+
+        <div class="review-list" id="reviewList">
+            <!-- Review items will be inserted here -->
+        </div>
+    </section>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadReviewList();
+
+    // Clear all button
+    document.getElementById('clearAllButton').addEventListener('click', function() {
+        if (confirm('復習リストを全て削除してもよろしいですか？')) {
+            ReviewStorage.clear();
+            loadReviewList();
+        }
+    });
+});
+
+function loadReviewList() {
+    const reviewList = document.getElementById('reviewList');
+    const items = ReviewStorage.getAll();
+
+    if (items.length === 0) {
+        reviewList.innerHTML = '<p class="no-items">復習リストは空です</p>';
+        return;
+    }
+
+    reviewList.innerHTML = items.map((item, index) => `
+        <div class="review-item">
+            <div class="review-item-header">
+                <span class="review-item-number">#${index + 1}</span>
+                <button class="btn btn-small btn-danger remove-button" data-question-id="${item.questionId}">
+                    削除
+                </button>
+            </div>
+            <p class="review-question"><strong>問題:</strong> ${item.questionText}</p>
+            <p class="review-your-answer">あなたの回答: <span class="wrong">${item.yourAnswer}</span></p>
+            <p class="review-correct-answer">正解: <span class="correct">${item.correctAnswer}</span></p>
+            <p class="review-explanation">${item.explanation}</p>
+            <p class="review-timestamp">追加日時: ${new Date(item.timestamp).toLocaleString('ja-JP')}</p>
+        </div>
+    `).join('');
+
+    // Add event listeners to remove buttons
+    document.querySelectorAll('.remove-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const questionId = parseInt(this.dataset.questionId);
+            ReviewStorage.remove(questionId);
+            loadReviewList();
+        });
+    });
+}
+</script>
+{{end}}

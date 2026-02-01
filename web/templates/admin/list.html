@@ -1,0 +1,41 @@
+{{define "content"}}
+<div class="container">
+    <section class="admin-container">
+        <h2 class="page-title">問題管理</h2>
+
+        <!-- Filters -->
+        <div class="filter-controls">
+            <select id="genreFilter" class="form-select">
+                <option value="">全てのジャンル</option>
+                {{range .Genres}}
+                <option value="{{.ID}}">{{.Icon}} {{.Name}}</option>
+                {{end}}
+            </select>
+
+            <select id="difficultyFilter" class="form-select">
+                <option value="">全ての難易度</option>
+                <option value="初級">初級</option>
+                <option value="中級">中級</option>
+                <option value="上級">上級</option>
+            </select>
+
+            <button class="btn btn-primary" id="filterButton">フィルター</button>
+            <a href="/admin/questions/new/edit" class="btn btn-success">新規作成</a>
+        </div>
+
+        <!-- Question list -->
+        <div class="question-list" id="questionList">
+            <!-- Questions will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <!-- Pagination will be inserted here -->
+        </div>
+    </section>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/js/admin.js"></script>
+{{end}}

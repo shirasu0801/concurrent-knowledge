@@ -1,0 +1,101 @@
+{{define "content"}}
+<div class="container">
+    <section class="result-container" id="resultContainer">
+        <h2 class="page-title">クイズ結果</h2>
+
+        <!-- Score summary -->
+        <div class="result-summary">
+            <div class="result-score">
+                <div class="score-label">総得点</div>
+                <div class="score-value" id="totalScore">0</div>
+            </div>
+
+            <div class="result-stats">
+                <div class="stat-item">
+                    <div class="stat-label">正解率</div>
+                    <div class="stat-value" id="accuracy">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">正解数</div>
+                    <div class="stat-value" id="correctCount">0 / 10</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Incorrect answers details -->
+        <div class="incorrect-answers" id="incorrectAnswers">
+            <h3 class="section-title">間違えた問題</h3>
+            <div id="incorrectList">
+                <!-- Incorrect questions will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="result-actions">
+            <button class="btn btn-primary" id="reviewButton">復習リストへ</button>
+            <a href="/" class="btn btn-secondary">ホームに戻る</a>
+        </div>
+    </section>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get quiz answers from sessionStorage
+    const answersStr = sessionStorage.getItem('quizAnswers');
+    if (!answersStr) {
+        window.location.href = '/';
+        return;
+    }
+
+    const answers = JSON.parse(answersStr);
+
+    // Calculate results
+    let totalScore = 0;
+    let correctCount = 0;
+    const incorrectAnswers = [];
+
+    answers.forEach(answer => {
+        totalScore += answer.pointsEarned;
+        if (answer.correct) {
+            correctCount++;
+        } else {
+            incorrectAnswers.push(answer);
+        }
+    });
+
+    const accuracy = ((correctCount / answers.length) * 100).toFixed(1);
+
+    // Display results
+    document.getElementById('totalScore').textContent = totalScore;
+    document.getElementById('accuracy').textContent = accuracy + '%';
+    document.getElementById('correctCount').textContent = correctCount + ' / ' + answers.length;
+
+    // Display incorrect answers
+    const incorrectList = document.getElementById('incorrectList');
+    if (incorrectAnswers.length === 0) {
+        incorrectList.innerHTML = '<p class="no-incorrect">全問正解！素晴らしいです！</p>';
+    } else {
+        incorrectList.innerHTML = incorrectAnswers.map(answer => `
+            <div class="incorrect-item">
+                <p class="incorrect-question"><strong>問題:</strong> ${answer.questionText}</p>
+                <p class="incorrect-your-answer">あなたの回答: <span class="wrong">${answer.yourAnswer}</span></p>
+                <p class="incorrect-correct-answer">正解: <span class="correct">${answer.correctAnswer}</span></p>
+                <p class="incorrect-explanation">${answer.explanation}</p>
+            </div>
+        `).join('');
+    }
+
+    // Review button
+    document.getElementById('reviewButton').addEventListener('click', function() {
+        window.location.href = '/review';
+    });
+
+    // Clear quiz data from sessionStorage
+    sessionStorage.removeItem('currentQuiz');
+    sessionStorage.removeItem('currentQuestionIndex');
+    // Keep quizAnswers for review page
+});
+</script>
+{{end}}

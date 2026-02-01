@@ -1,0 +1,9 @@
+# Concurrent Knowledge - robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemap location (update with your domain)
+# Sitemap: https://yourdomain.com/sitemap.xml

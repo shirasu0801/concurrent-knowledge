@@ -1,0 +1,95 @@
+{{define "content"}}
+<div class="container">
+    <section class="difficulty-selection">
+        <div class="breadcrumb">
+            <a href="/">ホーム</a> &gt; <span>{{.Genre.Name}}</span>
+        </div>
+
+        <h2 class="page-title">{{.Genre.Icon}} {{.Genre.Name}}</h2>
+        <p class="page-subtitle">難易度を選択してください</p>
+
+        <div class="difficulty-grid">
+            <div class="difficulty-card" data-difficulty="初級">
+                <h3 class="difficulty-name">初級</h3>
+                <p class="difficulty-description">基本的な用語と概念</p>
+                <p class="difficulty-multiplier">倍率: 1.0x</p>
+                <button class="btn btn-primary start-quiz-btn" data-genre-id="{{.Genre.ID}}" data-difficulty="初級">
+                    スタート
+                </button>
+            </div>
+
+            <div class="difficulty-card" data-difficulty="中級">
+                <h3 class="difficulty-name">中級</h3>
+                <p class="difficulty-description">実務レベルの知識</p>
+                <p class="difficulty-multiplier">倍率: 1.5x</p>
+                <button class="btn btn-primary start-quiz-btn" data-genre-id="{{.Genre.ID}}" data-difficulty="中級">
+                    スタート
+                </button>
+            </div>
+
+            <div class="difficulty-card" data-difficulty="上級">
+                <h3 class="difficulty-name">上級</h3>
+                <p class="difficulty-description">高度な専門知識</p>
+                <p class="difficulty-multiplier">倍率: 2.0x</p>
+                <button class="btn btn-primary start-quiz-btn" data-genre-id="{{.Genre.ID}}" data-difficulty="上級">
+                    スタート
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startButtons = document.querySelectorAll('.start-quiz-btn');
+
+    startButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+            const genreId = parseInt(this.dataset.genreId);
+            const difficulty = this.dataset.difficulty;
+
+            // Disable button
+            this.disabled = true;
+            this.textContent = '読み込み中...';
+
+            try {
+                // Start quiz
+                const response = await fetch('/api/quiz/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        genreId: genreId,
+                        difficulty: difficulty
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store quiz data in sessionStorage
+                    sessionStorage.setItem('currentQuiz', JSON.stringify(data.data));
+                    sessionStorage.setItem('currentQuestionIndex', '0');
+                    sessionStorage.setItem('quizAnswers', JSON.stringify([]));
+
+                    // Redirect to quiz page
+                    window.location.href = '/quiz';
+                } else {
+                    alert('クイズの開始に失敗しました: ' + data.error);
+                    this.disabled = false;
+                    this.textContent = 'スタート';
+                }
+            } catch (error) {
+                console.error('Error starting quiz:', error);
+                alert('クイズの開始に失敗しました');
+                this.disabled = false;
+                this.textContent = 'スタート';
+            }
+        });
+    });
+});
+</script>
+{{end}}

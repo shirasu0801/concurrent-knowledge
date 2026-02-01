@@ -1,0 +1,21 @@
+{{define "content"}}
+<div class="container">
+    <section class="hero">
+        <h2 class="hero-title">IT用語クイズ</h2>
+        <p class="hero-subtitle">技術ジャンルを選んでクイズに挑戦しよう</p>
+    </section>
+
+    <section class="genre-selection">
+        <h3 class="section-title">ジャンルを選択</h3>
+        <div class="genre-grid">
+            {{range .Genres}}
+            <a href="/difficulty?genre={{.ID}}" class="genre-card">
+                <div class="genre-icon">{{.Icon}}</div>
+                <h4 class="genre-name">{{.Name}}</h4>
+                <p class="genre-description">{{.Description}}</p>
+            </a>
+            {{end}}
+        </div>
+    </section>
+</div>
+{{end}}

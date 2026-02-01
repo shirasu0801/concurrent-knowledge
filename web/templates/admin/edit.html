@@ -1,0 +1,175 @@
+{{define "content"}}
+<div class="container">
+    <section class="admin-edit-container">
+        <div class="breadcrumb">
+            <a href="/admin/questions">問題管理</a> &gt; <span>{{if .IsNew}}新規作成{{else}}編集{{end}}</span>
+        </div>
+
+        <h2 class="page-title">{{if .IsNew}}問題を新規作成{{else}}問題を編集{{end}}</h2>
+
+        <form id="questionForm" class="question-form">
+            <input type="hidden" id="questionId" value="{{.QuestionID}}">
+
+            <div class="form-group">
+                <label for="genreId">ジャンル *</label>
+                <select id="genreId" class="form-control" required>
+                    <option value="">選択してください</option>
+                    {{range .Genres}}
+                    <option value="{{.ID}}">{{.Icon}} {{.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="difficulty">難易度 *</label>
+                <select id="difficulty" class="form-control" required>
+                    <option value="">選択してください</option>
+                    <option value="初級">初級</option>
+                    <option value="中級">中級</option>
+                    <option value="上級">上級</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="questionText">問題文 *</label>
+                <textarea id="questionText" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="optionA">選択肢 A *</label>
+                <input type="text" id="optionA" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="optionB">選択肢 B *</label>
+                <input type="text" id="optionB" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="optionC">選択肢 C *</label>
+                <input type="text" id="optionC" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="optionD">選択肢 D *</label>
+                <input type="text" id="optionD" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="correctAnswer">正解 *</label>
+                <select id="correctAnswer" class="form-control" required>
+                    <option value="">選択してください</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="explanation">解説 *</label>
+                <textarea id="explanation" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="basePoints">基本点数</label>
+                <input type="number" id="basePoints" class="form-control" value="100" min="1">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="submitButton">
+                    {{if .IsNew}}作成{{else}}更新{{end}}
+                </button>
+                <a href="/admin/questions" class="btn btn-secondary">キャンセル</a>
+            </div>
+        </form>
+    </section>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+const isNew = {{.IsNew}};
+const questionId = '{{.QuestionID}}';
+
+document.addEventListener('DOMContentLoaded', async function() {
+    const form = document.getElementById('questionForm');
+
+    // Load question data if editing
+    if (!isNew && questionId !== 'new') {
+        await loadQuestion(questionId);
+    }
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const questionData = {
+            genreId: parseInt(document.getElementById('genreId').value),
+            difficulty: document.getElementById('difficulty').value,
+            questionText: document.getElementById('questionText').value,
+            optionA: document.getElementById('optionA').value,
+            optionB: document.getElementById('optionB').value,
+            optionC: document.getElementById('optionC').value,
+            optionD: document.getElementById('optionD').value,
+            correctAnswer: document.getElementById('correctAnswer').value,
+            explanation: document.getElementById('explanation').value,
+            basePoints: parseInt(document.getElementById('basePoints').value)
+        };
+
+        try {
+            const url = isNew ? '/api/questions' : `/api/questions/${questionId}`;
+            const method = isNew ? 'POST' : 'PUT';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(questionData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert(isNew ? '問題を作成しました' : '問題を更新しました');
+                window.location.href = '/admin/questions';
+            } else {
+                alert('エラー: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('エラーが発生しました');
+        }
+    });
+});
+
+async function loadQuestion(id) {
+    try {
+        const response = await fetch(`/api/questions/${id}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const question = data.data;
+            document.getElementById('genreId').value = question.genreId;
+            document.getElementById('difficulty').value = question.difficulty;
+            document.getElementById('questionText').value = question.questionText;
+            document.getElementById('optionA').value = question.optionA;
+            document.getElementById('optionB').value = question.optionB;
+            document.getElementById('optionC').value = question.optionC;
+            document.getElementById('optionD').value = question.optionD;
+            document.getElementById('correctAnswer').value = question.correctAnswer;
+            document.getElementById('explanation').value = question.explanation;
+            document.getElementById('basePoints').value = question.basePoints;
+        } else {
+            alert('問題の読み込みに失敗しました');
+            window.location.href = '/admin/questions';
+        }
+    } catch (error) {
+        console.error('Error loading question:', error);
+        alert('問題の読み込みに失敗しました');
+        window.location.href = '/admin/questions';
+    }
+}
+</script>
+{{end}}
